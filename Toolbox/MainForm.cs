@@ -1442,6 +1442,7 @@ namespace Toolbox
                 foreach (var file in files)
                 {
                     IFileFormat fileFormat = null;
+                    string outputName = Path.GetFileNameWithoutExtension(file);
                     try
                     {
                          fileFormat = STFileLoader.OpenFileFormat(file);
@@ -1451,7 +1452,7 @@ namespace Toolbox
                         failedFiles.Add($"{file} \n Error:\n {ex} \n");
                     }
 
-                    SearchFileFormat(form.BatchSettings, fileFormat, extension, outputFolder, ExportMode.Textures);
+                    SearchFileFormat(form.BatchSettings, fileFormat, extension, outputFolder, ExportMode.Textures, outputName);
                 }
                 batchExportFileList.Clear();
             }
@@ -1469,7 +1470,7 @@ namespace Toolbox
         }
 
         private void SearchFileFormat(BatchFormatExport.Settings settings, IFileFormat fileFormat, 
-            string extension, string outputFolder, ExportMode exportMode)
+            string extension, string outputFolder, ExportMode exportMode, string originalFileName = "")
         {
             if (fileFormat == null) return;
 
@@ -1491,8 +1492,11 @@ namespace Toolbox
                         Directory.CreateDirectory(outputFolder);
                 }
 
+                int indexer = 0;
                 foreach (STGenericTexture tex in ((ITextureContainer)fileFormat).TextureList) {
-                    ExportTexture(tex, settings, $"{outputFolder}/{tex.Text}", extension);
+                    string nOutputName = originalFileName + (indexer == 0 ? "" : "AdditionalTexture" + indexer.ToString());
+                    ExportTexture(tex, settings, $"{outputFolder}/{nOutputName}", extension);
+                    indexer++;
                 }
             }
             else if (fileFormat is IExportableModel && exportMode == ExportMode.Models)
